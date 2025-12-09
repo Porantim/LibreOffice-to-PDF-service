@@ -1,0 +1,3 @@
+
+
+curl -X POST --data-binary @test.docx -H "X-File-Extension: docx" http://localhost:8080/convert --output out.pdf

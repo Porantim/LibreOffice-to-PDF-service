@@ -1,0 +1,17 @@
+services:
+  libreoffice-writer-server:
+    build:
+      context : ./
+      dockerfile : Dockerfile
+    container_name: libreoffice_writer_server
+    ports:
+      - "8080:8080"
+    #volumes: []
+      # Precisa montar um volume?
+      # - ./lo-profile:/tmp/lo-profile
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '1.0'

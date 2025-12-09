@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: libreoffice-writer-server
+  labels:
+    app: libreoffice-writer-server
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: libreoffice-writer-server
+  template:
+    metadata:
+      labels:
+        app: libreoffice-writer-server
+    spec:
+      containers:
+        - name: writer-converter
+          image: <ACR_NAME>.azurecr.io/libreoffice-writer-server:latest
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              memory: "300Mi"
+              cpu: "200m"
+            limits:
+              memory: "600Mi"
+              cpu: "1"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 15
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          # Opcional: segurança
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false # necessário para tmp e LibreOffice
+            runAsNonRoot: true
+            runAsUser: 1000
+      restartPolicy: Always
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: libreoffice-writer-server-svc
+  labels:
+    app: libreoffice-writer-server
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: 8080
+      protocol: TCP
+  selector:
+    app: libreoffice-writer-server
+---
