@@ -1,20 +1,14 @@
 {
   "openapi": "3.0.3",
   "info": {
-    "title": "LibreOffice Writer PDF Converter API",
-    "description": "Serviço REST para conversão de documentos do LibreOffice Writer (ex: .docx, .odt) para PDF, usando LibreOffice em modo listener via `unoserver`.\n\n**Atenção**: O serviço aceita qualquer binário, mas a conversão só funcionará se o formato for compatível com o LibreOffice Writer. Caso contrário, retornará erro 500.",
-    "version": "1.0.0",
-    "contact": {
-      "name": "Equipe de Infraestrutura"
-    },
-    "license": {
-      "name": "MIT"
-    }
+    "title": "Conversor de documentos para PDF",
+    "description": "Serviço REST para conversão de documentos suportados pelo LibreOffice Writer (ex: .docx, .odt, .doc, .rtf) para PDF. \n\n**Atenção**: O serviço aceita qualquer binário, mas a conversão só funcionará se o formato for compatível com o LibreOffice Writer.",
+    "version": "1.0.0"
   },
   "servers": [
     {
       "url": "http://localhost:8080",
-      "description": "Ambiente local (substitua em produção)"
+      "description": "Ambiente local"
     }
   ],
   "paths": {
@@ -45,7 +39,7 @@
               },
               "examples": {
                 "docxFile": {
-                  "summary": "Arquivo DOCX a ser convertido",
+                  "summary": "Arquivo a ser convertido",
                   "value": "Binário do arquivo .docx"
                 }
               }
@@ -68,8 +62,23 @@
             "description": "Requisição inválida (ex: corpo vazio)",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
+                "schema":  {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "example": 400
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Erro ao ler o arquivo de entrada."
+                    },
+                    "details": {
+                      "type": "string",
+                      "example": "Detalhes da exceção lançada"
+                    }
+                  },
+                  "required": ["code", "message"]
                 }
               }
             }
@@ -78,18 +87,44 @@
             "description": "Método não permitido (somente POST)",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
+                "schema":  {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "example": 405
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Somente o método POST é aceito."
+                    }
+                  },
+                  "required": ["code", "message"]
                 }
               }
             }
           },
           "500": {
-            "description": "Erro interno durante a conversão (ex: formato não suportado)",
+            "description": "Erro interno durante a conversão (ex: formato não suportado, erro de IO, etc)",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Error"
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "example": 500
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Falha na conversão."
+                    },
+                    "details": {
+                      "type": "string",
+                      "example": "Detalhes da exceção lançada"
+                    }
+                  },
+                  "required": ["code", "message"]
                 }
               }
             }
@@ -115,27 +150,23 @@
           }
         }
       }
-    }
-  },
-  "components": {
-    "schemas": {
-      "Error": {
-        "type": "object",
-        "properties": {
-          "code": {
-            "type": "integer",
-            "example": 500
-          },
-          "message": {
-            "type": "string",
-            "example": "Falha na conversão."
-          },
-          "details": {
-            "type": "string",
-            "example": "Unable to load document: format not recognized."
+    },
+    "/swagger" : {
+      "get": {
+        "summary": "Retorna a especificação Swagger/OpenAPI do serviço",
+        "operationId": "getSwaggerSpec",
+        "responses": {
+          "200": {
+            "description": "Especificação Swagger em JSON (esta documentação)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
           }
-        },
-        "required": ["code", "message"]
+        }
       }
     }
   }
